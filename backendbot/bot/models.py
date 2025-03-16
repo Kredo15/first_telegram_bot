@@ -32,7 +32,7 @@ class Dictionary(models.Model):
     category = models.ForeignKey('Categories', on_delete=models.PROTECT)
 
     def __str__(self):
-        return self.en_word
+        return f'{self.en_word.word}, {self.ru_word.word}, {self.category}'
 
 
 class Ratings(models.Model):
