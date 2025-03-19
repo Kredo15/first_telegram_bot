@@ -1,19 +1,26 @@
 from django.shortcuts import render
+from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from . import models
 from django.db.models import OuterRef, Subquery, Prefetch
-from bot.serializers import DictionaryModelSerializer
+from .serializers import DictionaryModelSerializer
 
 
 class WordForLearn(APIView):
 
-    def get(self, user_id=None, name_category=None):
-        '''words_in_learn = models.Userdictionaries.objects.filter(user=user_id)
+    def get(self, *args, **kwargs):
+        words_in_learn = models.Userdictionaries.objects.filter(user=kwargs.get('user_id'))
         if words_in_learn:
-            word = models.Dictionary.objects.annotate(word=Subquery(words_in_learn)).filter(category=name_category).values('en_word', 'ru_word')[:1]
-        else:'''
-        word = models.Dictionary.objects.prefetch_related(Prefetch('en_word', queryset=models.Enwords.objects.prefetch_related('id')))[:1]
-        print(word.query)
-        serialized_word = DictionaryModelSerializer(word, many=False)
+            word = models.Dictionary.objects.annotate(word=Subquery(words_in_learn)).filter(category__name=kwargs.get('name_category')).values('enword', 'ruword').first()
+        else:
+            word = models.Dictionary.objects.select_related('enword', 'ruword', 'category').all()[:1]
+        serialized_word = DictionaryModelSerializer(word, many=True)
         return Response(serialized_word.data)
+
+    def post(self, request):
+        serializer = DictionaryModelSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

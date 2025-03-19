@@ -3,7 +3,7 @@ from django.db import models
 
 class Ruwords(models.Model):
     "Таблица для русских слов/фраз"
-    word = models.TextField(verbose_name='word')
+    word = models.TextField()
 
     def __str__(self):
         return self.word
@@ -11,7 +11,7 @@ class Ruwords(models.Model):
 
 class Enwords(models.Model):
     "Таблица для английских слов/фраз"
-    word = models.TextField(verbose_name='word')
+    word = models.TextField()
 
     def __str__(self):
         return self.word
@@ -27,12 +27,12 @@ class Categories(models.Model):
 
 class Dictionary(models.Model):
     "Таблица для слов/фраз с переводом, разделенные на категории"
-    en_word = models.ForeignKey('Enwords', on_delete=models.PROTECT)
-    ru_word = models.ForeignKey('Ruwords', on_delete=models.PROTECT)
-    category = models.ForeignKey('Categories', on_delete=models.PROTECT)
+    enword = models.ForeignKey('Enwords', on_delete=models.PROTECT, verbose_name='enword')
+    ruword = models.ForeignKey('Ruwords', on_delete=models.PROTECT, verbose_name='ruword')
+    category = models.ForeignKey('Categories', on_delete=models.PROTECT, verbose_name='category')
 
     def __str__(self):
-        return f'{self.en_word.word}, {self.ru_word.word}, {self.category}'
+        return f'{self.enword.word}, {self.ruword.word}, {self.category.name}'
 
 
 class Ratings(models.Model):
@@ -47,7 +47,7 @@ class Users(models.Model):
     "Таблца пользователей"
     name = models.CharField(max_length=255)
     count_words = models.IntegerField()
-    rating = models.ForeignKey('Ratings', on_delete=models.PROTECT)
+    rating = models.ForeignKey('Ratings', on_delete=models.PROTECT, verbose_name='rating')
 
     def __str__(self):
         return f'{self.name}_{self.rating}'
@@ -55,8 +55,8 @@ class Users(models.Model):
 
 class Userdictionaries(models.Model):
     "Таблица для отслеживания изучения слов пользователями"
-    user = models.ForeignKey('Users', on_delete=models.PROTECT)
-    word = models.ForeignKey('Dictionary', on_delete=models.PROTECT)
+    user = models.ForeignKey('Users', on_delete=models.PROTECT, verbose_name='user')
+    word = models.ForeignKey('Dictionary', on_delete=models.PROTECT, verbose_name='word')
     translate_choose_ru = models.BooleanField(default=False)
     translate_choose_en = models.BooleanField(default=False)
     translate_write_ru = models.BooleanField(default=False)
