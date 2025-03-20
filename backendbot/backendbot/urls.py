@@ -20,5 +20,5 @@ from bot import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('get_new_word/', views.WordForLearn.as_view()) #, {'user_id': 1, 'name_category': 'популярные слова'}
+    path('get_new_word/', views.WordForLearn.as_view())#, {'user_id': 1, 'name_category': 'популярные слова'}
 ]
