@@ -1,5 +1,19 @@
 from rest_framework import serializers
-from .models import Dictionary, Enwords, Ruwords, Categories
+from .models import Dictionary, Enwords, Ruwords, Categories, Profile, Ratings
+
+
+class RatingsModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ratings
+        fields = ["name"]
+
+
+class ProfileModelSerializer(serializers.ModelSerializer):
+    rating = RatingsModelSerializer()
+
+    class Meta:
+        model = Profile
+        fields = ['name', 'count_words', 'rating']
 
 
 class EnwordsModelSerializer(serializers.ModelSerializer):
@@ -30,7 +44,4 @@ class DictionaryModelSerializer(serializers.ModelSerializer):
         fields = ['enword', 'ruword', 'category']
 
     def create(self, validated_data):
-        category_create, _ = Categories.objects.get_or_create(name=validated_data.get('category').get('name'))
-        ruword_create, _ = Ruwords.objects.get_or_create(word=validated_data.get('enword').get('word'))
-        enword_create, _ = Enwords.objects.get_or_create(word=validated_data.get('ruword').get('word'))
-        return Dictionary.objects.create(category=category_create, enword=enword_create, ruword=ruword_create)
+        return Dictionary(**validated_data)

@@ -4,19 +4,29 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from . import models
 from django.db.models import OuterRef, Subquery, Prefetch
-from .serializers import DictionaryModelSerializer
+from .serializers import DictionaryModelSerializer, ProfileModelSerializer
 
 
-class WordForLearn(APIView):
-
+class ProfileAPIView(APIView):
+    """Отдаём данные пользователя/
+    создаем профиль пользователя"""
     def get(self, *args, **kwargs):
-        words_in_learn = models.Userdictionaries.objects.filter(user=kwargs.get('user_id'))
+        data_user = models.Profile.objects.filter(user=kwargs.get('user')).values('name', 'count_words', 'rating')
+        serializer = ProfileModelSerializer(data_user, many=True)
+        return Response(serializer.data)
+
+
+class DictionaryAPIView(APIView):
+    """Отдаём слово, которое еще не изучалось/
+    добавляем новые слова в словарь"""
+    def get(self, *args, **kwargs):
+        words_in_learn = models.Userdictionaries.objects.filter(user=kwargs.get('user'))
         if words_in_learn:
             word = models.Dictionary.objects.annotate(word=Subquery(words_in_learn)).filter(category__name=kwargs.get('name_category')).values('enword', 'ruword').first()
         else:
             word = models.Dictionary.objects.select_related('enword', 'ruword', 'category').all()[:1]
-        serialized_word = DictionaryModelSerializer(word, many=True)
-        return Response(serialized_word.data)
+        serializer = DictionaryModelSerializer(word, many=True)
+        return Response(serializer.data)
 
     def post(self, request):
         serializer = DictionaryModelSerializer(data=request.data)

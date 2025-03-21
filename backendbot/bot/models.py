@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class Ruwords(models.Model):
@@ -43,11 +44,11 @@ class Ratings(models.Model):
         return self.name
 
 
-class Users(models.Model):
+class Profile(models.Model):
     "Таблца пользователей"
-    name = models.CharField(max_length=255)
+    user = models.OneToOneField(User, on_delete=models.PROTECT)
     count_words = models.IntegerField()
-    rating = models.ForeignKey('Ratings', on_delete=models.PROTECT, verbose_name='rating')
+    rating = models.ForeignKey('Ratings', on_delete=models.PROTECT)
 
     def __str__(self):
         return f'{self.name}_{self.rating}'
@@ -55,8 +56,8 @@ class Users(models.Model):
 
 class Userdictionaries(models.Model):
     "Таблица для отслеживания изучения слов пользователями"
-    user = models.ForeignKey('Users', on_delete=models.PROTECT, verbose_name='user')
-    word = models.ForeignKey('Dictionary', on_delete=models.PROTECT, verbose_name='word')
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
+    word = models.ForeignKey('Dictionary', on_delete=models.PROTECT)
     translate_choose_ru = models.BooleanField(default=False)
     translate_choose_en = models.BooleanField(default=False)
     translate_write_ru = models.BooleanField(default=False)
